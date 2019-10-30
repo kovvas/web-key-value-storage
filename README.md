@@ -1,6 +1,6 @@
-# web-key-value-storage
+# web key-value-storage
 
-Based on tarantool
+Based on [tarantool](https://www.tarantool.io/)
 
 **API:**
 
