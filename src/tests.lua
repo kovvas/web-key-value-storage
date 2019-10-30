@@ -81,6 +81,7 @@ local function deleteNoKey()
     check:is(response.status, 404, "DELETE not existed key")
 end
 
+-- Cleaning after yourself
 local function cleanUpAfterTests()
     httpc.delete(string.format('%s/%s', url, '1'))
     httpc.delete(string.format('%s/%s', url, '2'))

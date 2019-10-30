@@ -85,7 +85,6 @@ local function putHandler(req)
     local key = req:stash('key')
 
     -- check for errors
-    print(body)
     local checkResult = helpers.checkRequestDataHelper(req, "PUT", key, body)
     if (checkResult.status ~= "OK") then
         return checkResult.response
