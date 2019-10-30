@@ -15,3 +15,11 @@ Based on [tarantool](https://www.tarantool.io/)
 
 **DELETE:**
 `kv/{id}`
+
+To run tests you should run server : 
+
+`tarantool server.lua` 
+  
+and then run tests: 
+
+`tarantool tests.lua`
