@@ -29,10 +29,58 @@ end
 
 -- helper to process messages
 local function messageHelper(req, messageType, status, text)
-    local responce = req:render{json = {info = text}}
-    responce.status = status
+    local message = req:render{json = {info = text}}
+    message.status = status
     log.info("%s! %d: %s", messageType, status, text)
-    return responce
+    return message
+end
+
+-- helper to check is key and data valid
+local function checkRequestDataHelper(req, requestType, key, data, body)
+    local checkResult = {}
+    checkResult.status = "OK"
+
+    if (requestType == "POST" or requestType == "PUT") then
+        if (checkTableLength(body) ~= 2) then
+            checkResult.status = "ERROR"
+            checkResult.response = messageHelper(req, "ERROR", 400, "invalid body")
+            return checkResult
+        end
+
+        if (type(key) ~= 'string') or (type(data) ~= 'table') then
+            checkResult.status = "ERROR"
+            checkResult.response = messageHelper(req, "ERROR", 400, "invalid type of key/value")
+            return checkResult
+        end
+
+        if (key == nil) then
+            checkResult.status = "ERROR"
+            checkResult.response = messageHelper(req, "ERROR", 400, "missing key")
+            return checkResult
+        end
+
+        if (body == nil) then
+            checkResult.status = "ERROR"
+            checkResult.response = messageHelper(req, "ERROR", 400, "missing value")
+            return checkResult
+        end
+    end
+
+    if (requestType == "DELETE" or requestType == "GET") then
+        if (type(key) ~= 'string') then
+            checkResult.status = "ERROR"
+            checkResult.response = messageHelper(req, "ERROR", 400, "invalid type of key/value")
+            return checkResult
+        end
+
+        if (key == nil) then
+            checkResult.status = "ERROR"
+            checkResult.response = messageHelper(req, "ERROR", 400, "missing key")
+            return checkResult
+        end
+    end
+
+    return checkResult
 end
 
 -- POST handler
@@ -46,18 +94,10 @@ local function postHandler(req)
 
     local key, data = body['key'], body['value']
 
-    checkRequestDataHelper(key, data, body)
-
-    if (type(key) ~= 'string') or (type(data) ~= 'table') then
-        return messageHelper(req, "ERROR", 400, "invalid type of key/value")
-    end
-
-    if (key == nil) then
-        return messageHelper(req, "ERROR", 400, "missing key")
-    end
-
-    if (body == nil) then
-        return messageHelper(req, "ERROR", 400, "missing value")
+    -- check for errors
+    local checkResult = checkRequestDataHelper(req, "POST", key, data, body)
+    if (checkResult.status ~= "OK") then
+        return checkResult.response
     end
 
     -- request is valid, so check for duplicate key
@@ -75,12 +115,9 @@ local function deleteHandler(req)
     local key = req:stash('key')
 
     -- check for valid key
-    if (type(key) ~= 'string') then
-        return messageHelper(req, "ERROR", 400, "invalid type of key")
-    end
-
-    if (key == nil) then
-        return messageHelper(req, "ERROR", 400, "missing key")
+    local checkResult = checkRequestDataHelper(req, "DELETE", key, data, body)
+    if (checkResult.status ~= "OK") then
+        return checkResult.response
     end
 
     -- check if key exists
@@ -98,12 +135,9 @@ local function getHandler(req)
     local key = req:stash('key')
 
     -- check for valid key
-    if (type(key) ~= 'string') then
-        return messageHelper(req, "ERROR", 400, "invalid type of key")
-    end
-
-    if (key == nil) then
-        return messageHelper(req, "ERROR", 400, "missing key")
+    local checkResult = checkRequestDataHelper(req, "GET", key, data, body)
+    if (checkResult.status ~= "OK") then
+        return checkResult.response
     end
     
     local data = box.space.kv_storage:select{key}
@@ -122,30 +156,20 @@ end
 local function putHandler(req)
     local status, body = pcall(req.json, req)
 
-    -- checking for valid request
+    -- checking for request be json type
     if (status == false) then
-        return messageHelper(req, "ERROR", 400, "invalid request")
-    end
-
-    if (checkTableLength(body) ~= 2) then
-        return messageHelper(req, "ERROR", 400, "invalid body")
+        return messageHelper(req, "ERROR", 400, "request is not json type")
     end
 
     local key, data = body['key'], body['value']
 
-    if (type(key) ~= 'string') or (type(data) ~= 'table') then
-        return messageHelper(req, "ERROR", 400, "invalid type of key/value")
+    -- check for errors
+    local checkResult = checkRequestDataHelper(req, "POST", key, data, body)
+    if (checkResult.status ~= "OK") then
+        return checkResult.response
     end
 
-    if (key == nil) then
-        return messageHelper(req, "ERROR", 400, "missing key")
-    end
-
-    if (body == nil) then
-        return messageHelper(req, "ERROR", 400, "missing value")
-    end
-
-    -- check if key exists
+    -- request is valid, so check if key exists
     if table.getn(box.space.kv_storage:select{key}) == 0 then
         return messageHelper(req, "ERROR", 404, "no such key")
     end
@@ -167,7 +191,6 @@ local function changeHandler(req)
         return deleteHandler(req)
     end
     return messageHelper(req, "ERROR", 400, "Bad request")
-    -- Handle ERROR?
 end
 
 -- Create server instance
