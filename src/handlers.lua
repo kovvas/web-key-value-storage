@@ -16,7 +16,7 @@ handlers.postHandler = function(req)
     local key, data = body['key'], body['value']
 
     -- check for errors
-    local checkResult = helpers.checkRequestDataHelper(req, "POST", key, data, body)
+    local checkResult = helpers.checkRequestDataHelper(req, "POST", key, body)
     if (checkResult.status ~= "OK") then
         return checkResult.response
     end
@@ -36,7 +36,7 @@ local function deleteHandler(req)
     local key = req:stash('key')
 
     -- check for valid key
-    local checkResult = helpers.checkRequestDataHelper(req, "DELETE", key, data, body)
+    local checkResult = helpers.checkRequestDataHelper(req, "DELETE", key, body)
     if (checkResult.status ~= "OK") then
         return checkResult.response
     end
@@ -56,7 +56,7 @@ local function getHandler(req)
     local key = req:stash('key')
 
     -- check for valid key
-    local checkResult = helpers.checkRequestDataHelper(req, "GET", key, data, body)
+    local checkResult = helpers.checkRequestDataHelper(req, "GET", key, body)
     if (checkResult.status ~= "OK") then
         return checkResult.response
     end
@@ -83,10 +83,10 @@ local function putHandler(req)
     end
 
     local key = req:stash('key')
-    local data = body['value']
 
     -- check for errors
-    local checkResult = helpers.checkRequestDataHelper(req, "PUT", key, data, body)
+    print(body)
+    local checkResult = helpers.checkRequestDataHelper(req, "PUT", key, body)
     if (checkResult.status ~= "OK") then
         return checkResult.response
     end
@@ -97,7 +97,7 @@ local function putHandler(req)
     end
 
     -- request is valid and key exists, so update
-    box.space.kv_storage:update({key}, {{'=', 2, data}})
+    box.space.kv_storage:update({key}, {{'=', 2, body.value}})
     return helpers.messageHelper(req, "OK", 201, "PUT successful")
 end
 

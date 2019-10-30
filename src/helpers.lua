@@ -19,7 +19,7 @@ helpers.messageHelper = function(req, messageType, status, text)
 end
 
 -- helper to check is key and data valid
-helpers.checkRequestDataHelper = function(req, requestType, key, data, body)
+helpers.checkRequestDataHelper = function(req, requestType, key, body)
     local checkResult = {}
     checkResult.status = "OK"
 
@@ -30,13 +30,7 @@ helpers.checkRequestDataHelper = function(req, requestType, key, data, body)
             return checkResult
         end
 
-        if (type(key) ~= 'string') or (type(data) ~= 'table') then
-            checkResult.status = "ERROR"
-            checkResult.response = helpers.messageHelper(req, "ERROR", 400, "invalid type of key/value")
-            return checkResult
-        end
-
-        if (key == nil) then
+        if (key == nil or key == '') then
             checkResult.status = "ERROR"
             checkResult.response = helpers.messageHelper(req, "ERROR", 400, "missing key")
             return checkResult
@@ -64,13 +58,7 @@ helpers.checkRequestDataHelper = function(req, requestType, key, data, body)
     end
 
     if (requestType == "DELETE" or requestType == "GET") then
-        if (type(key) ~= 'string') then
-            checkResult.status = "ERROR"
-            checkResult.response = helpers.messageHelper(req, "ERROR", 400, "invalid type of key/value")
-            return checkResult
-        end
-
-        if (key == nil) then
+        if (key == nil or key == '') then
             checkResult.status = "ERROR"
             checkResult.response = helpers.messageHelper(req, "ERROR", 400, "missing key")
             return checkResult
