@@ -3,6 +3,29 @@ local log = require('log')
 
 local helpers = {}
 
+-- better use LuaSocket, because os.time() gives us only seconds
+helpers.checkTimestamp = function(timestamp)
+    -- if empty array - just add
+    if (#rpsTable == 0) then
+        table.insert(rpsTable, timestamp)
+        return "OK"
+    -- if we have different timestamp - clear array
+    elseif (rpsTable[1] ~= timestamp) then
+        local count = #rpsTable
+        for i = 0, count do rpsTable[i] = nil end
+        table.insert(rpsTable, timestamp)
+        return "OK"
+    -- we have the same second
+    elseif (rpsTable[1] == timestamp) then
+        if (#rpsTable < maxRPS) then
+            table.insert(rpsTable, timestamp)
+            return "OK"
+        elseif (#rpsTable == maxRPS) then
+            return "RPS exceeded"
+        end
+    end
+end
+
 -- helper to get length of lua's table
 helpers.checkTableLength = function(dataTable)
     local count = 0

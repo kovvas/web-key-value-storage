@@ -8,6 +8,12 @@ local handlers = {}
 handlers.postHandler = function(req)
     local status, body = pcall(req.json, req)
 
+    timestamp = os.time()
+    checkRPS = helpers.checkTimestamp(timestamp)
+    if (checkRPS == "RPS exceeded") then
+        return helpers.messageHelper(req, "ERROR", 429, "Requests per second exceeded")
+    end
+
     -- checking for request be json type
     if (status == false) then
         return helpers.messageHelper(req, "ERROR", 400, "request is not json type")
@@ -35,6 +41,12 @@ end
 local function deleteHandler(req)
     local key = req:stash('key')
 
+    timestamp = os.time()
+    checkRPS = helpers.checkTimestamp(timestamp)
+    if (checkRPS == "RPS exceeded") then
+        return helpers.messageHelper(req, "ERROR", 429, "Requests per second exceeded")
+    end
+
     -- check for valid key
     local checkResult = helpers.checkRequestDataHelper(req, "DELETE", key, body)
     if (checkResult.status ~= "OK") then
@@ -54,6 +66,12 @@ end
 -- GET handler
 local function getHandler(req)
     local key = req:stash('key')
+
+    timestamp = os.time()
+    checkRPS = helpers.checkTimestamp(timestamp)
+    if (checkRPS == "RPS exceeded") then
+        return helpers.messageHelper(req, "ERROR", 429, "Requests per second exceeded")
+    end
 
     -- check for valid key
     local checkResult = helpers.checkRequestDataHelper(req, "GET", key, body)
@@ -76,6 +94,12 @@ end
 -- PUT handler
 local function putHandler(req)
     local status, body = pcall(req.json, req)
+
+    timestamp = os.time()
+    checkRPS = helpers.checkTimestamp(timestamp)
+    if (checkRPS == "RPS exceeded") then
+        return helpers.messageHelper(req, "ERROR", 429, "Requests per second exceeded")
+    end
 
     -- checking for request be json type
     if (status == false) then

@@ -14,6 +14,11 @@ box.once('schema', function()
         { type = 'hash', parts = {1, 'string'}})
 end)
 
+-- Array to track RPS
+rpsTable = {}
+-- maxRPS can be configured
+maxRPS = 50
+
 -- Create server instance
 local server = require('http.server').new('0.0.0.0', 8080)
 
