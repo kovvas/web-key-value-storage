@@ -16,6 +16,8 @@ Based on [tarantool](https://www.tarantool.io/)
 **DELETE:**
 `kv/{id}`
 
+Also in `server.lua` you can set RPS limit and if you exceed it - you will get 429 request status
+
 To run tests you should run server : 
 
 `tarantool server.lua` 
